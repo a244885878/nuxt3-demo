@@ -14,7 +14,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -39,8 +39,9 @@ jobs:
             echo "command=install" >> $GITHUB_OUTPUT
             exit 0
           elif [ -f "${{ github.workspace }}/package.json" ]; then
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "command=ci" >> $GITHUB_OUTPUT
+            # Nuxt 推荐 pnpm
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+            echo "command=install" >> $GITHUB_OUTPUT
             exit 0
           else
             echo "Unable to determine package manager"
@@ -51,31 +52,30 @@ jobs:
         with:
           node-version: "20"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          # Automatically inject router.base in your Nuxt configuration file and set
-          # target to static (https://nuxtjs.org/docs/configuration-glossary/configuration-target/).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
-          static_site_generator: nuxt
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            dist
-            .nuxt
-          key: ${{ runner.os }}-nuxt-build-${{ hashFiles('dist') }}
-          restore-keys: |
-            ${{ runner.os }}-nuxt-build-
+
+      # 核心改变1: 删除 actions/configure-pages 的 static_site_generator: nuxt
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v5
+      #   with:
+      #     static_site_generator: nuxt
+
+      # 我们手动设置 GITHUB_REPO_NAME，确保 nuxt.config.ts 拿到正确的值
+      - name: Set GitHub Pages Repository Name
+        run: echo "GITHUB_REPO_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV # 获取实际仓库名称，例如 'my-nuxt'
+
       - name: Install dependencies
+        # 对于 pnpm，通常推荐 `pnpm install --frozen-lockfile` 或 `pnpm install`
+        # 但是 detect-package-manager 设为 install 可能是为了兼容 npm
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+
       - name: Static HTML export with Nuxt
-        run: ${{ steps.detect-package-manager.outputs.manager }} run generate
+        run: ${{ steps.detect-package-manager.outputs.manager }} run generate # 确保运行的是 generate 命令
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          # 核心改变2: Nuxt 3 的 generate 默认输出到 .output/public
+          path: ./.output/public # 确保上传的是 Nuxt 生成的正确目录
 
   # Deployment job
   deploy:

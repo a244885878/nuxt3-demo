@@ -1,15 +1,14 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+const GH_REPO_NAME = process.env.GITHUB_REPO_NAME || "my-nuxt"; // 默认值，本地开发使用
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: false },
   app: {
-    baseURL: "/my-nuxt",
+    baseURL: process.env.NODE_ENV === "production" ? `/${GH_REPO_NAME}/` : "/",
   },
   nitro: {
     prerender: {
-      // 允许预渲染过程中出现错误，但不会中止整个构建
-      // 当页面返回 404 或 500 时，仍会生成对应的错误页面而不是退出
-      failOnError: false,
+      failOnError: false, // 允许预渲染错误，避免因 404 导致构建中断
     },
   },
 });
