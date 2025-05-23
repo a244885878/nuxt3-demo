@@ -51,6 +51,12 @@
 <script setup lang="ts">
 import { useAsyncData } from "#app"; // 明确引入 useAsyncData
 import { useRouter } from "vue-router";
+import img1 from "~/assets/img/1.jpg";
+import img2 from "~/assets/img/2.jpg";
+import img3 from "~/assets/img/3.jpg";
+import img4 from "~/assets/img/4.jpg";
+import img5 from "~/assets/img/5.jpg";
+import img6 from "~/assets/img/6.jpg";
 
 const router = useRouter();
 
@@ -100,42 +106,42 @@ const fetchProducts = async (): Promise<Product[]> => {
             name: "智能手表 Pro",
             category: "电子产品",
             price: 1299.0,
-            imageUrl: "/img/1.jpg",
+            imageUrl: img1,
           },
           {
             id: 2,
             name: "无线降噪耳机",
             category: "音频设备",
             price: 899.0,
-            imageUrl: "/img/2.jpg",
+            imageUrl: img2,
           },
           {
             id: 3,
             name: "超薄笔记本电脑",
             category: "电脑",
             price: 7999.0,
-            imageUrl: "/img/3.jpg",
+            imageUrl: img3,
           },
           {
             id: 4,
             name: "时尚运动鞋",
             category: "服饰",
             price: 459.0,
-            imageUrl: "/img/4.jpg",
+            imageUrl: img4,
           },
           {
             id: 5,
             name: "多功能厨房机",
             category: "家居",
             price: 1899.0,
-            imageUrl: "/img/5.jpg",
+            imageUrl: img5,
           },
           {
             id: 6,
             name: "专业摄影无人机",
             category: "户外",
             price: 3500.0,
-            imageUrl: "/img/6.jpg",
+            imageUrl: img6,
           },
         ];
         resolve(data);

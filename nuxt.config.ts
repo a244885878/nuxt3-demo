@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     baseURL: process.env.NODE_ENV === "production" ? `/${GH_REPO_NAME}/` : "/",
+    pageTransition: { name: "page", mode: "out-in" },
   },
   nitro: {
     prerender: {
