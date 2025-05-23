@@ -74,7 +74,7 @@ interface Article {
 const fetchArticles = async (): Promise<Article[]> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      const shouldFail = Math.random() < 0.05; // 5% 几率失败
+      const shouldFail = Math.random() < 0.01; // 1% 几率失败
       if (shouldFail) {
         reject(new Error("网络请求失败，请稍后再试。"));
       } else {

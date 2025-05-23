@@ -89,7 +89,7 @@ const fetchProducts = async (): Promise<Product[]> => {
     // 模拟网络延迟
     setTimeout(() => {
       // 模拟成功或失败
-      const shouldFail = Math.random() < 0.5;
+      const shouldFail = Math.random() < 0.01; // 1% 几率失败
 
       if (shouldFail) {
         reject(new Error("模拟网络请求失败，请检查您的连接。"));
