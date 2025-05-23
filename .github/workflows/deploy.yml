@@ -38,10 +38,9 @@ jobs:
             echo "manager=yarn" >> $GITHUB_OUTPUT
             echo "command=install" >> $GITHUB_OUTPUT
             exit 0
-          elif [ -f "${{ github.workspace }}/package.json" ]; then
-            # Nuxt 推荐 pnpm
-            echo "manager=pnpm" >> $GITHUB_OUTPUT
-            echo "command=install" >> $GITHUB_OUTPUT
+          elif [ -f "${{ github.workspace }}/package-lock.json" ]; then # 检测 package-lock.json 来判断是 npm
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "command=ci" >> $GITHUB_OUTPUT # 使用 npm ci 来确保依赖安装的幂等性
             exit 0
           else
             echo "Unable to determine package manager"
@@ -53,29 +52,22 @@ jobs:
           node-version: "20"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
 
-      # 核心改变1: 删除 actions/configure-pages 的 static_site_generator: nuxt
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v5
-      #   with:
-      #     static_site_generator: nuxt
-
-      # 我们手动设置 GITHUB_REPO_NAME，确保 nuxt.config.ts 拿到正确的值
+      # 手动设置 GITHUB_REPO_NAME，确保 nuxt.config.ts 拿到正确的值
       - name: Set GitHub Pages Repository Name
         run: echo "GITHUB_REPO_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV # 获取实际仓库名称，例如 'my-nuxt'
 
       - name: Install dependencies
-        # 对于 pnpm，通常推荐 `pnpm install --frozen-lockfile` 或 `pnpm install`
-        # 但是 detect-package-manager 设为 install 可能是为了兼容 npm
+        # 将命令改为 npm
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
       - name: Static HTML export with Nuxt
-        run: ${{ steps.detect-package-manager.outputs.manager }} run generate # 确保运行的是 generate 命令
+        # 将命令改为 npm
+        run: ${{ steps.detect-package-manager.outputs.manager }} run generate
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # 核心改变2: Nuxt 3 的 generate 默认输出到 .output/public
-          path: ./.output/public # 确保上传的是 Nuxt 生成的正确目录
+          path: ./.output/public # Nuxt 3 的 generate 默认输出到 .output/public
 
   # Deployment job
   deploy:
