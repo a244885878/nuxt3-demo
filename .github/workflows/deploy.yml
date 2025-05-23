@@ -1,0 +1,72 @@
+name: Deploy Nuxt 3 to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Trigger this workflow when code is pushed to the 'main' branch
+
+# Configure permissions for GitHub Pages deployment
+permissions:
+  contents: write # Allows writing to the repository (for the gh-pages branch)
+  pages: write # Allows deploying to GitHub Pages
+  id-token: write # Allows getting an OIDC token for Pages
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Run on the latest Ubuntu runner
+
+    # Set up the deployment environment for GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Use Node.js version 20 (recommended)
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile # '--no-frozen-lockfile' is often good for CI environments
+
+      - name: Set GitHub Pages Repository Name
+        # Extracts 'my-nuxt' from 'your-username/my-nuxt' and sets it as an environment variable.
+        # This is consumed by nuxt.config.ts to set the correct app.baseURL.
+        run: echo "GITHUB_REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+
+      - name: Build and Generate (Static Site Generation for SSR-like behavior)
+        # This command pre-renders all your pages into static HTML files
+        # The output goes to ./.output/public/ by default.
+        env:
+          NODE_ENV: production
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }} # Pass your public API URL if needed
+        run: pnpm run generate # Your `build` command in package.json should be `nuxt build`, but here we use `nuxt generate`
+
+      - name: Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./.output/public # This is the default output directory for `nuxt generate`
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # This action handles the actual deployment to gh-pages branch
