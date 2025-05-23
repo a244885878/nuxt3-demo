@@ -21,7 +21,7 @@
       </div>
 
       <div v-else class="article-grid">
-        <NuxtLink
+        <div
           v-for="article in articles"
           :key="article.id"
           :to="`/articles/${article.slug}`"
@@ -38,7 +38,7 @@
             <p class="article-excerpt">{{ article.excerpt }}</p>
             <span class="read-more">阅读更多 &rarr;</span>
           </div>
-        </NuxtLink>
+        </div>
       </div>
     </main>
 
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { useAsyncData } from "#app";
-import { NuxtLink } from "#components"; // 明确导入 NuxtLink
+// import { NuxtLink } from "#components"; // 明确导入 NuxtLink
 
 useSeoMeta({
   title: "我的精彩文章",
